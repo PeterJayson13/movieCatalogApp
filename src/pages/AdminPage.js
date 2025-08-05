@@ -20,31 +20,37 @@ export default function AdminPage() {
   const token = localStorage.getItem('token');
 
   const fetchMovies = () => {
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  setError(null);
 
-    fetch('https://moviecatalogapi-w44t.onrender.com/movies/getMovies', {
-      headers: {
-        Authorization: `Bearer ${token}`
+  fetch('https://moviecatalogapi-w44t.onrender.com/movies/getMovies', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+    .then(async res => {
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Server Error: ${res.status} - ${text}`);
       }
+      return res.json();
     })
-      .then(async res => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`Server Error: ${res.status} - ${text}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        setMovies(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Error fetching movies:', err);
-        setError('Failed to fetch movies.');
-        setLoading(false);
-      });
-  };
+    .then(data => {
+      if (Array.isArray(data)) {
+        setMovies(data); // if API returns an array directly
+      } else if (Array.isArray(data.movies)) {
+        setMovies(data.movies); // if API wraps it in a "movies" field
+      } else {
+        setMovies([]); // fallback to empty array
+      }
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error('Error fetching movies:', err);
+      setError('Failed to fetch movies.');
+      setLoading(false);
+    });
+};
 
   const handleAddMovie = (e) => {
     e.preventDefault();
