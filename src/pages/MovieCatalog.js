@@ -9,13 +9,8 @@ export default function MovieCatalog() {
 
   const token = localStorage.getItem('token');
 
-  useEffect(() => {
-    if (!token) {
-      setError('You must be logged in to view the movies.');
-      setLoading(false);
-      return;
-    }
-
+  const fetchMovies = () => {
+    setLoading(true);
     fetch('https://moviecatalogapi-w44t.onrender.com/movies/getMovies', {
       headers: {
         Authorization: `Bearer ${token}`
@@ -30,10 +25,8 @@ export default function MovieCatalog() {
       })
       .then(data => {
         if (Array.isArray(data)) {
-          // This is if you change your backend to send an array directly
           setMovies(data);
         } else if (Array.isArray(data.movies)) {
-          // This is your current backend response format
           setMovies(data.movies);
         } else {
           setMovies([]);
@@ -45,6 +38,15 @@ export default function MovieCatalog() {
         setError("Failed to fetch movies. Please try again later.");
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    if (!token) {
+      setError('You must be logged in to view the movies.');
+      setLoading(false);
+    } else {
+      fetchMovies();
+    }
   }, [token]);
 
   return (
@@ -69,7 +71,7 @@ export default function MovieCatalog() {
           {movies.length > 0 ? (
             movies.map(movie => (
               <Col key={movie._id} md={6} lg={4} className="mb-4">
-                <MoviesCard movie={movie} />
+                <MoviesCard movie={movie} onUpdate={fetchMovies} />
               </Col>
             ))
           ) : (
