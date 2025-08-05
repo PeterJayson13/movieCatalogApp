@@ -5,8 +5,6 @@ import MoviesCard from '../components/MoviesCard';
 import UserContext from '../UserContext';
 import { Navigate } from 'react-router-dom';
 
-const baseURL = 'https://moviecatalogapi-w44t.onrender.com';
-
 export default function AdminPage() {
   const { user } = useContext(UserContext);
   const [movies, setMovies] = useState([]);
@@ -20,7 +18,7 @@ export default function AdminPage() {
   const token = localStorage.getItem('token');
 
   const fetchMovies = () => {
-    fetch(`${baseURL}/movies/getAllMovies`, {
+    fetch('https://moviecatalogapi-w44t.onrender.com/movies/getAllMovies', {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -36,7 +34,7 @@ export default function AdminPage() {
   const handleAddMovie = (e) => {
     e.preventDefault();
 
-    fetch(`${baseURL}/movies/addMovie`, {
+    fetch('https://moviecatalogapi-w44t.onrender.com/movies/addMovie', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

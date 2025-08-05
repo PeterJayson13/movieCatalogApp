@@ -3,8 +3,6 @@ import { useParams } from 'react-router-dom';
 import { Card, Container, Form, Button, ListGroup } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 
-const baseURL = 'https://moviecatalogapi-w44t.onrender.com';
-
 export default function MovieDetails() {
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
@@ -13,7 +11,7 @@ export default function MovieDetails() {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetch(`${baseURL}/movies/getMovieById/${id}`, {
+    fetch(`https://moviecatalogapi-w44t.onrender.com/movies/getMovieById/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -33,7 +31,7 @@ export default function MovieDetails() {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    fetch(`${baseURL}/movies/addComment/${id}`, {
+    fetch(`https://moviecatalogapi-w44t.onrender.com/movies/addComment/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -46,7 +44,7 @@ export default function MovieDetails() {
         Swal.fire({ icon: 'success', title: 'Comment added' });
 
         // Re-fetch movie to get updated comment with user info
-        return fetch(`${baseURL}/movies/getMovieById/${id}`, {
+        return fetch(`https://moviecatalogapi-w44t.onrender.com/movies/getMovieById/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

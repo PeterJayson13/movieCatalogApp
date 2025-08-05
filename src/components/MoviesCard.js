@@ -17,10 +17,9 @@ export default function MovieCard({ movie, onUpdate }) {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
-  const apiBase = "https://moviecatalogapi-w44t.onrender.com/movies";
 
   function deleteMovie(id) {
-    fetch(`${apiBase}/deleteMovie/${id}`, {
+    fetch(`https://moviecatalogapi-w44t.onrender.com/movies/deleteMovie/${id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`
@@ -36,7 +35,7 @@ export default function MovieCard({ movie, onUpdate }) {
 
   function updateMovie(e) {
     e.preventDefault();
-    fetch(`${apiBase}/updateMovie/${_id}`, {
+    fetch(`https://moviecatalogapi-w44t.onrender.com/movies/updateMovie/${_id}`, {
       method: 'PATCH',
       headers: {
         "Content-Type": "application/json",
