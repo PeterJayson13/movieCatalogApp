@@ -17,40 +17,36 @@ export default function AdminPage() {
   const [genre, setGenre] = useState('');
   const [description, setDescription] = useState('');
 
+  const [refreshKey, setRefreshKey] = useState(0); // triggers fetch on update/delete
+
   const token = localStorage.getItem('token');
 
   const fetchMovies = () => {
-  setLoading(true);
-  setError(null);
+    setLoading(true);
+    setError(null);
 
-  fetch('https://moviecatalogapi-w44t.onrender.com/movies/getMovies', {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  })
-    .then(async res => {
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Server Error: ${res.status} - ${text}`);
+    fetch('https://moviecatalogapi-w44t.onrender.com/movies/getMovies', {
+      headers: {
+        Authorization: `Bearer ${token}`
       }
-      return res.json();
     })
-    .then(data => {
-      if (Array.isArray(data)) {
-        setMovies(data); // if API returns an array directly
-      } else if (Array.isArray(data.movies)) {
-        setMovies(data.movies); // if API wraps it in a "movies" field
-      } else {
-        setMovies([]); // fallback to empty array
-      }
-      setLoading(false);
-    })
-    .catch(err => {
-      console.error('Error fetching movies:', err);
-      setError('Failed to fetch movies.');
-      setLoading(false);
-    });
-};
+      .then(async res => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Server Error: ${res.status} - ${text}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        setMovies(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching movies:', err);
+        setError('Failed to fetch movies.');
+        setLoading(false);
+      });
+  };
 
   const handleAddMovie = (e) => {
     e.preventDefault();
@@ -85,7 +81,7 @@ export default function AdminPage() {
         setYear('');
         setGenre('');
         setDescription('');
-        setMovies(prev => [...prev, data.newMovie || data]); // instantly add new movie
+        setRefreshKey(prev => prev + 1); // trigger refresh
       })
       .catch(err => {
         console.error('Add movie error:', err);
@@ -101,7 +97,7 @@ export default function AdminPage() {
     if (user?.isAdmin) {
       fetchMovies();
     }
-  }, [user]);
+  }, [user, refreshKey]);
 
   if (!user || !user.isAdmin) {
     return <Navigate to="/" />;
@@ -163,15 +159,7 @@ export default function AdminPage() {
           {movies.length > 0 ? (
             movies.map(movie => (
               <Col key={movie._id} md={6} lg={4} className="mb-4">
-                <MoviesCard
-                  movie={movie}
-                  onDelete={(deletedId) => setMovies(prev => prev.filter(m => m._id !== deletedId))}
-                  onEdit={(updatedMovie) =>
-                    setMovies(prev =>
-                      prev.map(m => (m._id === updatedMovie._id ? updatedMovie : m))
-                    )
-                  }
-                />
+                <MoviesCard movie={movie} onUpdate={() => setRefreshKey(prev => prev + 1)} />
               </Col>
             ))
           ) : (
