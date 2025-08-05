@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from 'react';
-import { Container, Row, Col, Form, Button } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Spinner, Alert } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import MoviesCard from '../components/MoviesCard';
 import UserContext from '../UserContext';
@@ -8,6 +8,8 @@ import { Navigate } from 'react-router-dom';
 export default function AdminPage() {
   const { user } = useContext(UserContext);
   const [movies, setMovies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [title, setTitle] = useState('');
   const [director, setDirector] = useState('');
@@ -18,16 +20,29 @@ export default function AdminPage() {
   const token = localStorage.getItem('token');
 
   const fetchMovies = () => {
+    setLoading(true);
+    setError(null);
+
     fetch('https://moviecatalogapi-w44t.onrender.com/movies/getMovies', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
-      .then(res => res.json())
-      .then(data => setMovies(data))
+      .then(async res => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Server Error: ${res.status} - ${text}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        setMovies(data);
+        setLoading(false);
+      })
       .catch(err => {
         console.error('Error fetching movies:', err);
-        setMovies([]);
+        setError('Failed to fetch movies.');
+        setLoading(false);
       });
   };
 
@@ -48,33 +63,32 @@ export default function AdminPage() {
         description
       })
     })
-      .then(res => res.json())
-      .then(data => {
-        if (data._id) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Movie added successfully!'
-          });
-          setTitle('');
-          setDirector('');
-          setYear('');
-          setGenre('');
-          setDescription('');
-          fetchMovies();
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Failed to add movie',
-            text: data.message || 'An error occurred.'
-          });
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || 'Failed to add movie');
         }
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Movie added successfully!'
+        });
+
+        // Reset form
+        setTitle('');
+        setDirector('');
+        setYear('');
+        setGenre('');
+        setDescription('');
+
+        fetchMovies();
       })
       .catch(err => {
         console.error('Add movie error:', err);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'Something went wrong.'
+          text: err.message || 'Something went wrong.'
         });
       });
   };
@@ -131,17 +145,28 @@ export default function AdminPage() {
         </Button>
       </Form>
 
-      <Row>
-        {movies.length > 0 ? (
-          movies.map(movie => (
-            <Col key={movie._id} md={6} lg={4} className="mb-4">
-              <MoviesCard movie={movie} onUpdate={fetchMovies} />
-            </Col>
-          ))
-        ) : (
-          <p className="text-center">No movies available.</p>
-        )}
-      </Row>
+      {loading ? (
+        <div className="text-center">
+          <Spinner animation="border" role="status" />
+          <span className="ms-2">Loading movies...</span>
+        </div>
+      ) : error ? (
+        <Alert variant="danger" className="text-center">
+          {error}
+        </Alert>
+      ) : (
+        <Row>
+          {movies.length > 0 ? (
+            movies.map(movie => (
+              <Col key={movie._id} md={6} lg={4} className="mb-4">
+                <MoviesCard movie={movie} onUpdate={fetchMovies} />
+              </Col>
+            ))
+          ) : (
+            <p className="text-center">No movies available.</p>
+          )}
+        </Row>
+      )}
     </Container>
   );
 }

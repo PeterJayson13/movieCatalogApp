@@ -37,7 +37,7 @@ export default function MovieDetails() {
 
   useEffect(() => {
     fetchMovie();
-  }, [id, token]);
+  }, [id]);
 
   const handleCommentSubmit = (e) => {
     e.preventDefault();
@@ -61,7 +61,7 @@ export default function MovieDetails() {
       .then(() => {
         Swal.fire({ icon: 'success', title: 'Comment added' });
         setNewComment('');
-        fetchMovie(); // Refresh movie with new comments
+        fetchMovie(); // Refresh comments
       })
       .catch(err => {
         console.error('Error adding comment:', err);

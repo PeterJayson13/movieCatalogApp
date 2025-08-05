@@ -26,9 +26,9 @@ export default function MovieCard({ movie, onUpdate }) {
       }
     })
       .then(res => res.json())
-      .then(() => {
-        Swal.fire({ icon: "success", title: "Movie Deleted" });
-        onUpdate();
+      .then(response => {
+        Swal.fire({ icon: "success", title: response.message || "Movie Deleted" });
+        onUpdate?.();
       })
       .catch(err => console.error("Delete error:", err));
   }
@@ -50,10 +50,10 @@ export default function MovieCard({ movie, onUpdate }) {
       })
     })
       .then(res => res.json())
-      .then(() => {
-        Swal.fire({ icon: "success", title: "Movie Updated" });
+      .then(response => {
+        Swal.fire({ icon: "success", title: response.message || "Movie Updated" });
         setShowModal(false);
-        onUpdate();
+        onUpdate?.();
       })
       .catch(err => console.error("Update error:", err));
   }
@@ -73,7 +73,7 @@ export default function MovieCard({ movie, onUpdate }) {
             View Details
           </Button>
 
-          {user.isAdmin && (
+          {user?.isAdmin && (
             <div>
               <Button
                 variant="warning"
@@ -133,31 +133,4 @@ export default function MovieCard({ movie, onUpdate }) {
               <Form.Control
                 type="text"
                 value={updatedGenre}
-                onChange={e => setUpdatedGenre(e.target.value)}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-2">
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={updatedDescription}
-                onChange={e => setUpdatedDescription(e.target.value)}
-                required
-              />
-            </Form.Group>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowModal(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" type="submit">
-              Save Changes
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
-    </>
-  );
-}
+                onChange={e => setUpdatedGenre(e.t

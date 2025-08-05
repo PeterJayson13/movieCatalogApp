@@ -29,7 +29,15 @@ export default function MovieCatalog() {
         return res.json();
       })
       .then(data => {
-        setMovies(data);
+        if (Array.isArray(data)) {
+          // This is if you change your backend to send an array directly
+          setMovies(data);
+        } else if (Array.isArray(data.movies)) {
+          // This is your current backend response format
+          setMovies(data.movies);
+        } else {
+          setMovies([]);
+        }
         setLoading(false);
       })
       .catch(err => {
