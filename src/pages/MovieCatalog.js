@@ -7,7 +7,7 @@ export default function MovieCatalog() {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetch("https://moviecatalogapi-w44t.onrender.com/movies/getAllMovies", {
+    fetch('https://moviecatalogapi-w44t.onrender.com/movies/getMovies', {
       headers: {
         Authorization: `Bearer ${token}`
       }
