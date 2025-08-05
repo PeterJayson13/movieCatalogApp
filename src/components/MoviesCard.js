@@ -4,7 +4,7 @@ import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserContext from '../UserContext';
 
-export default function MovieCard({ movie, onUpdate }) {
+export default function MoviesCard({ movie, onUpdate }) {
   const { _id, title, director, year, description, genre } = movie;
 
   const [showModal, setShowModal] = useState(false);
@@ -14,31 +14,34 @@ export default function MovieCard({ movie, onUpdate }) {
   const [updatedDescription, setUpdatedDescription] = useState(description);
   const [updatedGenre, setUpdatedGenre] = useState(genre);
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
 
-  function deleteMovie(id) {
-    fetch(`https://moviecatalogapi-w44t.onrender.com/movies/deleteMovie/${id}`, {
+  const deleteMovie = () => {
+    fetch(`https://moviecatalogapi-w44t.onrender.com/movies/deleteMovie/${_id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
       .then(res => res.json())
-      .then(response => {
-        Swal.fire({ icon: "success", title: response.message || "Movie Deleted" });
-        onUpdate?.();
+      .then(data => {
+        Swal.fire({ icon: 'success', title: 'Movie deleted' });
+        if (onUpdate) onUpdate();
       })
-      .catch(err => console.error("Delete error:", err));
-  }
+      .catch(err => {
+        console.error('Delete error:', err);
+        Swal.fire({ icon: 'error', title: 'Delete failed', text: 'Could not delete movie.' });
+      });
+  };
 
-  function updateMovie(e) {
+  const updateMovie = (e) => {
     e.preventDefault();
     fetch(`https://moviecatalogapi-w44t.onrender.com/movies/updateMovie/${_id}`, {
       method: 'PATCH',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({
@@ -50,17 +53,20 @@ export default function MovieCard({ movie, onUpdate }) {
       })
     })
       .then(res => res.json())
-      .then(response => {
-        Swal.fire({ icon: "success", title: response.message || "Movie Updated" });
+      .then(data => {
+        Swal.fire({ icon: 'success', title: 'Movie updated' });
         setShowModal(false);
-        onUpdate?.();
+        if (onUpdate) onUpdate();
       })
-      .catch(err => console.error("Update error:", err));
-  }
+      .catch(err => {
+        console.error('Update error:', err);
+        Swal.fire({ icon: 'error', title: 'Update failed', text: 'Could not update movie.' });
+      });
+  };
 
   return (
     <>
-      <Card className="mb-3">
+      <Card className="mb-3 shadow-sm">
         <Card.Body>
           <Card.Title>{title}</Card.Title>
           <Card.Subtitle className="mb-2 text-muted">Directed by: {director}</Card.Subtitle>
@@ -68,7 +74,7 @@ export default function MovieCard({ movie, onUpdate }) {
           <Card.Text><strong>Genre:</strong> {genre}</Card.Text>
           <Card.Text><strong>Description:</strong> {description}</Card.Text>
         </Card.Body>
-        <Card.Footer className="d-flex justify-content-between">
+        <Card.Footer className="d-flex justify-content-between align-items-center">
           <Button variant="primary" size="sm" onClick={() => navigate(`/movies/${_id}`)}>
             View Details
           </Button>
@@ -86,7 +92,7 @@ export default function MovieCard({ movie, onUpdate }) {
               <Button
                 variant="danger"
                 size="sm"
-                onClick={() => deleteMovie(_id)}
+                onClick={deleteMovie}
               >
                 Delete
               </Button>
@@ -133,4 +139,31 @@ export default function MovieCard({ movie, onUpdate }) {
               <Form.Control
                 type="text"
                 value={updatedGenre}
-                onChange={e => setUpdatedGenre(e.t
+                onChange={e => setUpdatedGenre(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-2">
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={updatedDescription}
+                onChange={e => setUpdatedDescription(e.target.value)}
+                required
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit">
+              Save Changes
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+    </>
+  );
+}
