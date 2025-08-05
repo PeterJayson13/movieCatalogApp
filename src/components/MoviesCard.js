@@ -19,25 +19,39 @@ export default function MoviesCard({ movie, onUpdate }) {
   const { user } = useContext(UserContext);
 
   const deleteMovie = () => {
-    fetch(`https://moviecatalogapi-w44t.onrender.com/movies/deleteMovie/${_id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'This movie will be permanently deleted.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, delete it!'
+    }).then(result => {
+      if (result.isConfirmed) {
+        fetch(`https://moviecatalogapi-w44t.onrender.com/movies/deleteMovie/${_id}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+          .then(async res => {
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Delete failed');
+            Swal.fire({ icon: 'success', title: 'Movie deleted' });
+            if (onUpdate) onUpdate();
+          })
+          .catch(err => {
+            console.error('Delete error:', err);
+            Swal.fire({ icon: 'error', title: 'Delete failed', text: err.message });
+          });
       }
-    })
-      .then(res => res.json())
-      .then(data => {
-        Swal.fire({ icon: 'success', title: 'Movie deleted' });
-        if (onUpdate) onUpdate();
-      })
-      .catch(err => {
-        console.error('Delete error:', err);
-        Swal.fire({ icon: 'error', title: 'Delete failed', text: 'Could not delete movie.' });
-      });
+    });
   };
 
   const updateMovie = (e) => {
     e.preventDefault();
+
     fetch(`https://moviecatalogapi-w44t.onrender.com/movies/updateMovie/${_id}`, {
       method: 'PATCH',
       headers: {
@@ -52,15 +66,16 @@ export default function MoviesCard({ movie, onUpdate }) {
         genre: updatedGenre
       })
     })
-      .then(res => res.json())
-      .then(data => {
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Update failed');
         Swal.fire({ icon: 'success', title: 'Movie updated' });
         setShowModal(false);
         if (onUpdate) onUpdate();
       })
       .catch(err => {
         console.error('Update error:', err);
-        Swal.fire({ icon: 'error', title: 'Update failed', text: 'Could not update movie.' });
+        Swal.fire({ icon: 'error', title: 'Update failed', text: err.message });
       });
   };
 

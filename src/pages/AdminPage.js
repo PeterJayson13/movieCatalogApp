@@ -74,14 +74,12 @@ export default function AdminPage() {
           title: 'Movie added successfully!'
         });
 
-        // Reset form
         setTitle('');
         setDirector('');
         setYear('');
         setGenre('');
         setDescription('');
-
-        fetchMovies();
+        fetchMovies(); // Refresh movie list
       })
       .catch(err => {
         console.error('Add movie error:', err);
