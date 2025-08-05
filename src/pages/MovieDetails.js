@@ -12,34 +12,25 @@ export default function MovieDetails() {
   const token = localStorage.getItem('token');
 
   const fetchMovie = () => {
-    if (!token) {
-      setError("You must be logged in to view movie details.");
-      setIsLoading(false);
-      return;
-    }
-
-    fetch(`https://moviecatalogapi-w44t.onrender.com/movies/getMovieById/${id}`, {
+    fetch(`https://moviecatalogapi-w44t.onrender.com/movies/getMovie/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
       .then(async res => {
-        const text = await res.text();
         if (!res.ok) {
+          const text = await res.text();
           throw new Error(`Server Error: ${res.status} - ${text}`);
         }
-        return JSON.parse(text);
+        return res.json();
       })
       .then(data => {
-        if (!data || data.error) {
-          throw new Error(data.error || 'Movie not found.');
-        }
         setMovie(data);
         setIsLoading(false);
       })
       .catch(err => {
         console.error('Error fetching movie:', err);
-        setError(err.message || 'Failed to load movie details.');
+        setError('Failed to load movie details.');
         setIsLoading(false);
       });
   };

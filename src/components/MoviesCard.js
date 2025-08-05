@@ -14,6 +14,8 @@ export default function MoviesCard({ movie, onUpdate }) {
   const [updatedDescription, setUpdatedDescription] = useState(description);
   const [updatedGenre, setUpdatedGenre] = useState(genre);
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
@@ -29,6 +31,7 @@ export default function MoviesCard({ movie, onUpdate }) {
       confirmButtonText: 'Yes, delete it!'
     }).then(result => {
       if (result.isConfirmed) {
+        setIsProcessing(true);
         fetch(`https://moviecatalogapi-w44t.onrender.com/movies/deleteMovie/${_id}`, {
           method: 'DELETE',
           headers: {
@@ -44,13 +47,15 @@ export default function MoviesCard({ movie, onUpdate }) {
           .catch(err => {
             console.error('Delete error:', err);
             Swal.fire({ icon: 'error', title: 'Delete failed', text: err.message });
-          });
+          })
+          .finally(() => setIsProcessing(false));
       }
     });
   };
 
   const updateMovie = (e) => {
     e.preventDefault();
+    setIsProcessing(true);
 
     fetch(`https://moviecatalogapi-w44t.onrender.com/movies/updateMovie/${_id}`, {
       method: 'PATCH',
@@ -76,7 +81,8 @@ export default function MoviesCard({ movie, onUpdate }) {
       .catch(err => {
         console.error('Update error:', err);
         Swal.fire({ icon: 'error', title: 'Update failed', text: err.message });
-      });
+      })
+      .finally(() => setIsProcessing(false));
   };
 
   return (
@@ -101,6 +107,7 @@ export default function MoviesCard({ movie, onUpdate }) {
                 size="sm"
                 className="me-2"
                 onClick={() => setShowModal(true)}
+                disabled={isProcessing}
               >
                 Edit
               </Button>
@@ -108,6 +115,7 @@ export default function MoviesCard({ movie, onUpdate }) {
                 variant="danger"
                 size="sm"
                 onClick={deleteMovie}
+                disabled={isProcessing}
               >
                 Delete
               </Button>
@@ -170,10 +178,10 @@ export default function MoviesCard({ movie, onUpdate }) {
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowModal(false)}>
+            <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isProcessing}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit">
+            <Button variant="primary" type="submit" disabled={isProcessing}>
               Save Changes
             </Button>
           </Modal.Footer>
