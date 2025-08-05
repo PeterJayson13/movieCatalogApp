@@ -17,8 +17,6 @@ export default function AdminPage() {
   const [genre, setGenre] = useState('');
   const [description, setDescription] = useState('');
 
-  const [refreshKey, setRefreshKey] = useState(0); // triggers fetch on update/delete
-
   const token = localStorage.getItem('token');
 
   const fetchMovies = () => {
@@ -81,7 +79,7 @@ export default function AdminPage() {
         setYear('');
         setGenre('');
         setDescription('');
-        setRefreshKey(prev => prev + 1); // trigger refresh
+        setMovies(prev => [...prev, data.newMovie || data]); // instantly add new movie
       })
       .catch(err => {
         console.error('Add movie error:', err);
@@ -97,7 +95,7 @@ export default function AdminPage() {
     if (user?.isAdmin) {
       fetchMovies();
     }
-  }, [user, refreshKey]);
+  }, [user]);
 
   if (!user || !user.isAdmin) {
     return <Navigate to="/" />;
@@ -159,7 +157,15 @@ export default function AdminPage() {
           {movies.length > 0 ? (
             movies.map(movie => (
               <Col key={movie._id} md={6} lg={4} className="mb-4">
-                <MoviesCard movie={movie} onUpdate={() => setRefreshKey(prev => prev + 1)} />
+                <MoviesCard
+                  movie={movie}
+                  onDelete={(deletedId) => setMovies(prev => prev.filter(m => m._id !== deletedId))}
+                  onEdit={(updatedMovie) =>
+                    setMovies(prev =>
+                      prev.map(m => (m._id === updatedMovie._id ? updatedMovie : m))
+                    )
+                  }
+                />
               </Col>
             ))
           ) : (

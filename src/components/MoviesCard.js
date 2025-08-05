@@ -4,7 +4,7 @@ import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserContext from '../UserContext';
 
-export default function MoviesCard({ movie, onUpdate }) {
+export default function MoviesCard({ movie, onDelete, onEdit }) {
   const { _id, title, director, year, description, genre } = movie;
 
   const [showModal, setShowModal] = useState(false);
@@ -13,8 +13,6 @@ export default function MoviesCard({ movie, onUpdate }) {
   const [updatedYear, setUpdatedYear] = useState(year);
   const [updatedDescription, setUpdatedDescription] = useState(description);
   const [updatedGenre, setUpdatedGenre] = useState(genre);
-
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
@@ -31,7 +29,6 @@ export default function MoviesCard({ movie, onUpdate }) {
       confirmButtonText: 'Yes, delete it!'
     }).then(result => {
       if (result.isConfirmed) {
-        setIsProcessing(true);
         fetch(`https://moviecatalogapi-w44t.onrender.com/movies/deleteMovie/${_id}`, {
           method: 'DELETE',
           headers: {
@@ -42,20 +39,18 @@ export default function MoviesCard({ movie, onUpdate }) {
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Delete failed');
             Swal.fire({ icon: 'success', title: 'Movie deleted' });
-            if (onUpdate) onUpdate();
+            if (onDelete) onDelete(_id); // notify parent
           })
           .catch(err => {
             console.error('Delete error:', err);
             Swal.fire({ icon: 'error', title: 'Delete failed', text: err.message });
-          })
-          .finally(() => setIsProcessing(false));
+          });
       }
     });
   };
 
   const updateMovie = (e) => {
     e.preventDefault();
-    setIsProcessing(true);
 
     fetch(`https://moviecatalogapi-w44t.onrender.com/movies/updateMovie/${_id}`, {
       method: 'PATCH',
@@ -76,13 +71,12 @@ export default function MoviesCard({ movie, onUpdate }) {
         if (!res.ok) throw new Error(data.message || 'Update failed');
         Swal.fire({ icon: 'success', title: 'Movie updated' });
         setShowModal(false);
-        if (onUpdate) onUpdate();
+        if (onEdit) onEdit(data.updatedMovie || data); // notify parent
       })
       .catch(err => {
         console.error('Update error:', err);
         Swal.fire({ icon: 'error', title: 'Update failed', text: err.message });
-      })
-      .finally(() => setIsProcessing(false));
+      });
   };
 
   return (
@@ -107,7 +101,6 @@ export default function MoviesCard({ movie, onUpdate }) {
                 size="sm"
                 className="me-2"
                 onClick={() => setShowModal(true)}
-                disabled={isProcessing}
               >
                 Edit
               </Button>
@@ -115,7 +108,6 @@ export default function MoviesCard({ movie, onUpdate }) {
                 variant="danger"
                 size="sm"
                 onClick={deleteMovie}
-                disabled={isProcessing}
               >
                 Delete
               </Button>
@@ -178,10 +170,10 @@ export default function MoviesCard({ movie, onUpdate }) {
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowModal(false)} disabled={isProcessing}>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit" disabled={isProcessing}>
+            <Button variant="primary" type="submit">
               Save Changes
             </Button>
           </Modal.Footer>
