@@ -1,7 +1,8 @@
 import { Card, Modal, Button, Form } from 'react-bootstrap';
 import Swal from 'sweetalert2';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import UserContext from '../UserContext';
 
 export default function MovieCard({ movie, onUpdate }) {
   const { _id, title, director, year, description, genre } = movie;
@@ -14,14 +15,15 @@ export default function MovieCard({ movie, onUpdate }) {
   const [updatedGenre, setUpdatedGenre] = useState(genre);
 
   const token = localStorage.getItem("token");
-  const apiBase = `${process.env.REACT_APP_BASE_URL}/movies`;
   const navigate = useNavigate();
+  const { user } = useContext(UserContext);
+  const apiBase = "https://moviecatalogapi-w44t.onrender.com/movies";
 
   function deleteMovie(id) {
     fetch(`${apiBase}/deleteMovie/${id}`, {
       method: 'DELETE',
       headers: {
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`
       }
     })
       .then(res => res.json())
@@ -38,7 +40,7 @@ export default function MovieCard({ movie, onUpdate }) {
       method: 'PATCH',
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({
         title: updatedTitle,
@@ -71,14 +73,26 @@ export default function MovieCard({ movie, onUpdate }) {
           <Button variant="primary" size="sm" onClick={() => navigate(`/movies/${_id}`)}>
             View Details
           </Button>
-          <div>
-            <Button variant="warning" size="sm" className="me-2" onClick={() => setShowModal(true)}>
-              Edit
-            </Button>
-            <Button variant="danger" size="sm" onClick={() => deleteMovie(_id)}>
-              Delete
-            </Button>
-          </div>
+
+          {user.isAdmin && (
+            <div>
+              <Button
+                variant="warning"
+                size="sm"
+                className="me-2"
+                onClick={() => setShowModal(true)}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => deleteMovie(_id)}
+              >
+                Delete
+              </Button>
+            </div>
+          )}
         </Card.Footer>
       </Card>
 
@@ -90,28 +104,58 @@ export default function MovieCard({ movie, onUpdate }) {
           <Modal.Body>
             <Form.Group className="mb-2">
               <Form.Label>Title</Form.Label>
-              <Form.Control type="text" value={updatedTitle} onChange={e => setUpdatedTitle(e.target.value)} required />
+              <Form.Control
+                type="text"
+                value={updatedTitle}
+                onChange={e => setUpdatedTitle(e.target.value)}
+                required
+              />
             </Form.Group>
             <Form.Group className="mb-2">
               <Form.Label>Director</Form.Label>
-              <Form.Control type="text" value={updatedDirector} onChange={e => setUpdatedDirector(e.target.value)} required />
+              <Form.Control
+                type="text"
+                value={updatedDirector}
+                onChange={e => setUpdatedDirector(e.target.value)}
+                required
+              />
             </Form.Group>
             <Form.Group className="mb-2">
               <Form.Label>Year</Form.Label>
-              <Form.Control type="text" value={updatedYear} onChange={e => setUpdatedYear(e.target.value)} required />
+              <Form.Control
+                type="text"
+                value={updatedYear}
+                onChange={e => setUpdatedYear(e.target.value)}
+                required
+              />
             </Form.Group>
             <Form.Group className="mb-2">
               <Form.Label>Genre</Form.Label>
-              <Form.Control type="text" value={updatedGenre} onChange={e => setUpdatedGenre(e.target.value)} required />
+              <Form.Control
+                type="text"
+                value={updatedGenre}
+                onChange={e => setUpdatedGenre(e.target.value)}
+                required
+              />
             </Form.Group>
             <Form.Group className="mb-2">
               <Form.Label>Description</Form.Label>
-              <Form.Control as="textarea" rows={3} value={updatedDescription} onChange={e => setUpdatedDescription(e.target.value)} required />
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={updatedDescription}
+                onChange={e => setUpdatedDescription(e.target.value)}
+                required
+              />
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
-            <Button variant="primary" type="submit">Save Changes</Button>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit">
+              Save Changes
+            </Button>
           </Modal.Footer>
         </Form>
       </Modal>

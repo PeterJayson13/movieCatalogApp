@@ -5,13 +5,12 @@ import MoviesCard from '../components/MoviesCard';
 import UserContext from '../UserContext';
 import { Navigate } from 'react-router-dom';
 
-const baseURL = process.env.REACT_APP_BASE_URL;
+const baseURL = 'https://moviecatalogapi-w44t.onrender.com';
 
 export default function AdminPage() {
   const { user } = useContext(UserContext);
   const [movies, setMovies] = useState([]);
 
-  // Form fields
   const [title, setTitle] = useState('');
   const [director, setDirector] = useState('');
   const [year, setYear] = useState('');
@@ -21,7 +20,7 @@ export default function AdminPage() {
   const token = localStorage.getItem('token');
 
   const fetchMovies = () => {
-    fetch(`${baseURL}/movies/getMovies`, {
+    fetch(`${baseURL}/movies/getAllMovies`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -58,7 +57,6 @@ export default function AdminPage() {
             icon: 'success',
             title: 'Movie added successfully!'
           });
-          // Clear form
           setTitle('');
           setDirector('');
           setYear('');

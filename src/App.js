@@ -13,8 +13,6 @@ import Register from './pages/Register';
 import './App.css';
 import { UserProvider } from './UserContext';
 
-const baseURL = process.env.REACT_APP_BASE_URL;
-
 function App() {
   const [user, setUser] = useState({ id: null, isAdmin: null });
 
@@ -26,7 +24,7 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      fetch(`${baseURL}/users/details`, {
+      fetch('https://moviecatalogapi-w44t.onrender.com/users/details', {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())

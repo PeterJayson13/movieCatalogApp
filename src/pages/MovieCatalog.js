@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import MoviesCard from '../components/MoviesCard'; 
 import { Container, Row, Col } from 'react-bootstrap';
 
-const baseURL = process.env.REACT_APP_BASE_URL;
+const baseURL = 'https://moviecatalogapi-w44t.onrender.com';
 
 export default function MovieCatalog() {
   const [movies, setMovies] = useState([]);
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetch(`${baseURL}/movies/getMovies`, {
+    fetch(`${baseURL}/movies/getAllMovies`, {
       headers: {
         Authorization: `Bearer ${token}`
       }

@@ -4,8 +4,6 @@ import { Navigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import UserContext from '../UserContext';
 
-const baseURL = process.env.REACT_APP_BASE_URL;
-
 export default function Login() {
   const { user, setUser } = useContext(UserContext);
 
@@ -19,7 +17,7 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
-    fetch(`${baseURL}/users/login`, {
+    fetch('https://moviecatalogapi-w44t.onrender.com/users/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -63,7 +61,7 @@ export default function Login() {
   }
 
   const retrieveUserDetails = (token) => {
-    fetch(`${baseURL}/users/details`, {
+    fetch('https://moviecatalogapi-w44t.onrender.com/users/details', {
       headers: {
         Authorization: `Bearer ${token}`
       }

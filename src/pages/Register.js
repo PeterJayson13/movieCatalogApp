@@ -4,8 +4,6 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import UserContext from '../UserContext';
 
-const baseURL = process.env.REACT_APP_BASE_URL;
-
 export default function Register() {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
@@ -27,7 +25,7 @@ export default function Register() {
       return;
     }
 
-    fetch(`${baseURL}/users/register`, {
+    fetch('https://moviecatalogapi-w44t.onrender.com/users/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })

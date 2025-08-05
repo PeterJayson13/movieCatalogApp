@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Card, Container, Form, Button, ListGroup } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 
-const baseURL = process.env.REACT_APP_BASE_URL;
+const baseURL = 'https://moviecatalogapi-w44t.onrender.com';
 
 export default function MovieDetails() {
   const { id } = useParams();
@@ -13,7 +13,7 @@ export default function MovieDetails() {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetch(`${baseURL}/movies/getMovie/${id}`, {
+    fetch(`${baseURL}/movies/getMovieById/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -24,7 +24,7 @@ export default function MovieDetails() {
         setIsLoading(false);
       })
       .catch(err => {
-        console.error("Error fetching movie:", err);
+        console.error('Error fetching movie:', err);
         setIsLoading(false);
       });
   }, [id, token]);
@@ -46,7 +46,7 @@ export default function MovieDetails() {
         Swal.fire({ icon: 'success', title: 'Comment added' });
 
         // Re-fetch movie to get updated comment with user info
-        return fetch(`${baseURL}/movies/getMovie/${id}`, {
+        return fetch(`${baseURL}/movies/getMovieById/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -58,7 +58,7 @@ export default function MovieDetails() {
         setNewComment('');
       })
       .catch(err => {
-        console.error("Error adding comment:", err);
+        console.error('Error adding comment:', err);
         Swal.fire({ icon: 'error', title: 'Failed to add comment' });
       });
   };
@@ -82,7 +82,7 @@ export default function MovieDetails() {
         <Card.Header>Comments</Card.Header>
         <ListGroup variant="flush">
           {movie.comments?.length > 0 ? (
-            movie.comments.map((c, index) => (
+            [...movie.comments].reverse().map((c, index) => (
               <ListGroup.Item key={index}>
                 <strong>{c.userId?.email || 'Unknown User'}:</strong> {c.comment}
               </ListGroup.Item>
@@ -93,20 +93,22 @@ export default function MovieDetails() {
         </ListGroup>
       </Card>
 
-      <Form className="mt-3" onSubmit={handleCommentSubmit}>
-        <Form.Group>
-          <Form.Label>Add a Comment</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={2}
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Write your comment..."
-            required
-          />
-        </Form.Group>
-        <Button type="submit" className="mt-2">Submit Comment</Button>
-      </Form>
+      {token && (
+        <Form className="mt-3" onSubmit={handleCommentSubmit}>
+          <Form.Group>
+            <Form.Label>Add a Comment</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={2}
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Write your comment..."
+              required
+            />
+          </Form.Group>
+          <Button type="submit" className="mt-2">Submit Comment</Button>
+        </Form>
+      )}
     </Container>
   );
 }
