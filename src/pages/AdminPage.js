@@ -18,7 +18,7 @@ export default function AdminPage() {
   const token = localStorage.getItem('token');
 
   const fetchMovies = () => {
-    fetch('https://moviecatalogapi-w44t.onrender.com/movies/getAllMovies', {
+    fetch('https://moviecatalogapi-w44t.onrender.com/movies/getMovies', {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -26,7 +26,7 @@ export default function AdminPage() {
       .then(res => res.json())
       .then(data => setMovies(data))
       .catch(err => {
-        console.error("Error fetching movies:", err);
+        console.error('Error fetching movies:', err);
         setMovies([]);
       });
   };
@@ -70,7 +70,7 @@ export default function AdminPage() {
         }
       })
       .catch(err => {
-        console.error("Add movie error:", err);
+        console.error('Add movie error:', err);
         Swal.fire({
           icon: 'error',
           title: 'Error',

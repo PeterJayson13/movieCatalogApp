@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, Container, Form, Button, ListGroup } from 'react-bootstrap';
+import { Card, Container, Form, Button, ListGroup, Spinner, Alert } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 
 export default function MovieDetails() {
@@ -8,23 +8,35 @@ export default function MovieDetails() {
   const [movie, setMovie] = useState(null);
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const token = localStorage.getItem('token');
 
-  useEffect(() => {
+  const fetchMovie = () => {
     fetch(`https://moviecatalogapi-w44t.onrender.com/movies/getMovieById/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Server Error: ${res.status} - ${text}`);
+        }
+        return res.json();
+      })
       .then(data => {
         setMovie(data);
         setIsLoading(false);
       })
       .catch(err => {
         console.error('Error fetching movie:', err);
+        setError('Failed to load movie details.');
         setIsLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchMovie();
   }, [id, token]);
 
   const handleCommentSubmit = (e) => {
@@ -39,21 +51,17 @@ export default function MovieDetails() {
       },
       body: JSON.stringify({ comment: newComment.trim() })
     })
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Comment failed: ${text}`);
+        }
+        return res.json();
+      })
       .then(() => {
         Swal.fire({ icon: 'success', title: 'Comment added' });
-
-        // Re-fetch movie to get updated comment with user info
-        return fetch(`https://moviecatalogapi-w44t.onrender.com/movies/getMovieById/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-      })
-      .then(res => res.json())
-      .then(data => {
-        setMovie(data);
         setNewComment('');
+        fetchMovie(); // Refresh movie with new comments
       })
       .catch(err => {
         console.error('Error adding comment:', err);
@@ -61,8 +69,26 @@ export default function MovieDetails() {
       });
   };
 
-  if (isLoading) return <p className="text-center mt-5">Loading...</p>;
-  if (!movie) return <p className="text-center mt-5">Movie not found.</p>;
+  if (isLoading) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner animation="border" role="status" />
+        <span className="ms-2">Loading movie details...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container className="mt-5">
+        <Alert variant="danger" className="text-center">{error}</Alert>
+      </Container>
+    );
+  }
+
+  if (!movie) {
+    return <p className="text-center mt-5">Movie not found.</p>;
+  }
 
   return (
     <Container className="mt-5">
